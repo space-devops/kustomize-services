@@ -1,0 +1,197 @@
+---
+# Source: helm-api/templates/config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-configmap
+  namespace: mountebank
+data:
+  config.yaml: |
+    global:
+      correlationIdHeader: "X-Internal-Correlation-ID"
+
+    server:
+      port: 3000
+      readTimeoutSeconds: 15
+      writeTimeoutSeconds: 15
+
+    logger:
+      file: /home/nonroot/outputs/outputs.log
+      level: debug
+
+    mountebank:
+      host: mountebank-svc
+      health:
+        port: 2525
+        path: config/
+      imposters:
+        - name: list
+          path: v1/planets
+          port: 4545
+        - name: earth
+          path: v1/planet/earth
+          port: 4548
+        - name: jupiter
+          path: v1/planet/jupiter
+          port: 4550
+        - name: mars
+          path: v1/planet/mars
+          port: 4549
+        - name: mercury
+          path: v1/planet/mercury
+          port: 4546
+        - name: neptune
+          path: v1/planet/neptune
+          port: 4553
+        - name: pluto
+          path: v1/planet/pluto
+          port: 4554
+        - name: saturn
+          path: v1/planet/saturn
+          port: 4551
+        - name: uranus
+          path: v1/planet/uranus
+          port: 4552
+        - name: venus
+          path: v1/planet/venus
+          port: 4547
+---
+# Source: helm-api/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: main-svc-mountebank
+  namespace: mountebank
+  labels:
+    name: main-svc-mountebank
+    version: 0.1.0
+spec:
+  type: ClusterIP
+  selector:
+    name: main-pod-mountebank
+    version: 0.1.0  
+  ports:
+  - port: 3000
+    targetPort: 3000
+    name: svc-3000
+    protocol: TCP
+  - port: 2000
+    targetPort: 2000
+    name: svc-2000
+    protocol: TCP
+---
+# Source: helm-api/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-mountebank-deploy
+  namespace: mountebank
+  labels:
+    name: api-mountebank-deploy
+    version: 0.1.0
+  annotations:
+    imposters.helm.created-by: helm-api-installer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: main-pod-mountebank
+      version: 0.1.0
+  template:
+    metadata:
+      name: main-pod-mountebank
+      namespace: mountebank
+      labels:
+        name: main-pod-mountebank
+        version: 0.1.0
+    spec:
+      initContainers:
+        - name: init-mountebank-imposters
+          image: dockvalkyrie/mountebank-imposters:0.7.8          
+          resources:
+            requests:
+              cpu: 256m
+              memory: 128Mi
+            limits:
+              cpu: 512m
+              memory: 256Mi          
+          securityContext:
+            runAsUser: 1000
+            runAsNonRoot: true
+            privileged: false
+      containers:
+        - name: main-container-mountebank
+          image: dockvalkyrie/api-mountebank:0.6.5
+          imagePullPolicy: Always          
+          ports:
+          - containerPort: 3000
+            name: svc-3000
+            protocol: TCP
+          - containerPort: 2000
+            name: svc-2000
+            protocol: TCP          
+          readinessProbe:
+            httpGet:
+              port: 3000
+              path: /ready
+            initialDelaySeconds: 3
+            periodSeconds: 3          
+          livenessProbe:
+            httpGet:
+              port: 3000
+              path: /live
+            initialDelaySeconds: 3
+            periodSeconds: 3
+            failureThreshold: 2          
+          resources:
+            requests:
+              cpu: 256m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1536Mi          
+          securityContext:
+            runAsUser: 65532
+            runAsNonRoot: true
+            privileged: false
+          volumeMounts:
+            - mountPath: /home/nonroot/.imposters/
+              name: config-volume
+      volumes:
+        - name: config-volume
+          configMap:
+            name: api-configmap
+---
+# Source: helm-api/templates/ing-contour.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: contour-ingress
+  namespace: mountebank
+spec:
+  ingressClassName: contour
+  rules:
+    - host: mountebank.local.io
+      http:
+        paths:          
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: main-svc-mountebank
+                port:
+                  number: 3000
+          - pathType: Prefix
+            path: /planets
+            backend:
+              service:
+                name: main-svc-mountebank
+                port:
+                  number: 3000
+          - pathType: Prefix
+            path: /planet
+            backend:
+              service:
+                name: main-svc-mountebank
+                port:
+                  number: 3000
