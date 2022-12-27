@@ -4,5 +4,4 @@ kind: Kustomization
 namespace: mountebank
 
 resources:
-  - namespace.yaml
   - base.yaml
