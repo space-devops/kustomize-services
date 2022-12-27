@@ -1,0 +1,224 @@
+---
+# Source: helm-imposters/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: mountebank-svc
+  namespace: mountebank
+  labels:
+    name: mountebank-svc
+    version: 0.1.0
+spec:
+  type: ClusterIP
+  selector:
+    name: mountebank-pod
+    version: 0.1.0  
+  ports:
+  - port: 2525
+    targetPort: 2525
+    name: svc-2525
+    protocol: TCP
+  - port: 4540
+    targetPort: 4540
+    name: imps-4540
+    protocol: TCP
+  - port: 4541
+    targetPort: 4541
+    name: imps-4541
+    protocol: TCP
+  - port: 4542
+    targetPort: 4542
+    name: imps-4542
+    protocol: TCP
+  - port: 4543
+    targetPort: 4543
+    name: imps-4543
+    protocol: TCP
+  - port: 4544
+    targetPort: 4544
+    name: imps-4544
+    protocol: TCP
+  - port: 4545
+    targetPort: 4545
+    name: imps-4545
+    protocol: TCP
+  - port: 4546
+    targetPort: 4546
+    name: imps-4546
+    protocol: TCP
+  - port: 4547
+    targetPort: 4547
+    name: imps-4547
+    protocol: TCP
+  - port: 4548
+    targetPort: 4548
+    name: imps-4548
+    protocol: TCP
+  - port: 4549
+    targetPort: 4549
+    name: imps-4549
+    protocol: TCP
+  - port: 4550
+    targetPort: 4550
+    name: imps-4550
+    protocol: TCP
+  - port: 4551
+    targetPort: 4551
+    name: imps-4551
+    protocol: TCP
+  - port: 4552
+    targetPort: 4552
+    name: imps-4552
+    protocol: TCP
+  - port: 4553
+    targetPort: 4553
+    name: imps-4553
+    protocol: TCP
+  - port: 4554
+    targetPort: 4554
+    name: imps-4554
+    protocol: TCP
+  - port: 4555
+    targetPort: 4555
+    name: imps-4555
+    protocol: TCP
+  - port: 4556
+    targetPort: 4556
+    name: imps-4556
+    protocol: TCP
+  - port: 4557
+    targetPort: 4557
+    name: imps-4557
+    protocol: TCP
+  - port: 4558
+    targetPort: 4558
+    name: imps-4558
+    protocol: TCP
+  - port: 4559
+    targetPort: 4559
+    name: imps-4559
+    protocol: TCP
+  - port: 4560
+    targetPort: 4560
+    name: imps-4560
+    protocol: TCP
+---
+# Source: helm-imposters/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mountebank-deploy
+  namespace: mountebank
+  labels:
+    name: mountebank-deploy
+    version: 0.1.0
+  annotations:
+    imposters.helm.created-by: helm-imposter-installer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: mountebank-pod
+      version: 0.1.0
+  template:
+    metadata:
+      name: mountebank-pod
+      namespace: mountebank
+      labels:
+        name: mountebank-pod
+        version: 0.1.0
+    spec:
+      containers:
+        - name: mountebank-server
+          image: bbyars/mountebank:2.8.1          
+          ports:
+          - containerPort: 2525
+            name: svc-2525
+            protocol: TCP
+          - containerPort: 4540
+            name: imps-4540
+            protocol: TCP
+          - containerPort: 4541
+            name: imps-4541
+            protocol: TCP
+          - containerPort: 4542
+            name: imps-4542
+            protocol: TCP
+          - containerPort: 4543
+            name: imps-4543
+            protocol: TCP
+          - containerPort: 4544
+            name: imps-4544
+            protocol: TCP
+          - containerPort: 4545
+            name: imps-4545
+            protocol: TCP
+          - containerPort: 4546
+            name: imps-4546
+            protocol: TCP
+          - containerPort: 4547
+            name: imps-4547
+            protocol: TCP
+          - containerPort: 4548
+            name: imps-4548
+            protocol: TCP
+          - containerPort: 4549
+            name: imps-4549
+            protocol: TCP
+          - containerPort: 4550
+            name: imps-4550
+            protocol: TCP
+          - containerPort: 4551
+            name: imps-4551
+            protocol: TCP
+          - containerPort: 4552
+            name: imps-4552
+            protocol: TCP
+          - containerPort: 4553
+            name: imps-4553
+            protocol: TCP
+          - containerPort: 4554
+            name: imps-4554
+            protocol: TCP
+          - containerPort: 4555
+            name: imps-4555
+            protocol: TCP
+          - containerPort: 4556
+            name: imps-4556
+            protocol: TCP
+          - containerPort: 4557
+            name: imps-4557
+            protocol: TCP
+          - containerPort: 4558
+            name: imps-4558
+            protocol: TCP
+          - containerPort: 4559
+            name: imps-4559
+            protocol: TCP
+          - containerPort: 4560
+            name: imps-4560
+            protocol: TCP          
+          args:
+            - --pidfile
+            - /tmp/mb.pid
+            - --logfile
+            - /tmp/mb.log
+          readinessProbe:
+            httpGet:
+              port: 2525
+              path: /config
+          livenessProbe:
+            httpGet:
+              port: 2525
+              path: /config
+          resources:
+            requests:
+              cpu: 256m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1536Mi          
+          securityContext:
+            runAsUser: 1000
+            runAsNonRoot: true
+            privileged: false
