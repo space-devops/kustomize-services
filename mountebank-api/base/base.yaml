@@ -163,7 +163,7 @@ spec:
       volumes:
         - name: config-volume
           configMap:
-            name: api-configmap
+            name: api-mountebank-cm
 ---
 # Source: helm-api/templates/ing-contour.yaml
 apiVersion: networking.k8s.io/v1
