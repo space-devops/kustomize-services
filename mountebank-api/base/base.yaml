@@ -14,9 +14,12 @@ data:
       correlationIdHeader: "X-Internal-Correlation-ID"
 
     server:
-      port: 3000
-      readTimeoutSeconds: 15
-      writeTimeoutSeconds: 15
+      http:
+        port: 3000
+        readTimeoutSeconds: 15
+        writeTimeoutSeconds: 15
+      grpc:
+        port: 6990
 
     logger:
       file: /home/nonroot/outputs/outputs.log
@@ -68,6 +71,8 @@ metadata:
   labels:
     name: main-svc-mountebank
     version: 0.1.0
+  annotations:
+    projectcontour.io/upstream-protocol.h2c: "6990"
 spec:
   type: ClusterIP
   selector:
@@ -81,6 +86,10 @@ spec:
   - port: 2000
     targetPort: 2000
     name: svc-2000
+    protocol: TCP
+  - port: 6990
+    targetPort: 6990
+    name: svc-6990
     protocol: TCP
 ---
 # Source: helm-api/templates/deployment.yaml
@@ -124,7 +133,7 @@ spec:
             privileged: false
       containers:
         - name: main-container-mountebank
-          image: dockvalkyrie/api-mountebank:0.6.5
+          image: dockvalkyrie/api-mountebank:0.7.0
           imagePullPolicy: Always          
           ports:
           - containerPort: 3000
@@ -132,6 +141,9 @@ spec:
             protocol: TCP
           - containerPort: 2000
             name: svc-2000
+            protocol: TCP
+          - containerPort: 6990
+            name: svc-6990
             protocol: TCP          
           readinessProbe:
             httpGet:
@@ -201,3 +213,13 @@ spec:
                 name: main-svc-mountebank
                 port:
                   number: 3000
+    - host:  mountebank.local.grpc
+      http:
+        paths:          
+          - backend:
+              service:
+                name: main-svc-mountebank
+                port:
+                  number: 6990
+            pathType: Prefix
+            path: "/"
