@@ -17,5 +17,5 @@ kustomize build overlays/base-install | kubectl apply -f -
 ## Use kubeseal for secret storage
 
 ```shell
-kubeseal --controller-name local-sealed-secrets --controller-namespace sealed-secrets < api-mountebank.yaml > ../mountebank-api/overlays/dev/sealed-secrets.yaml -o yaml
+kubeseal sealed-secrets < api-mountebank.yaml > ../mountebank-api/overlays/dev/sealed-secrets.yaml -o yaml
 ```
