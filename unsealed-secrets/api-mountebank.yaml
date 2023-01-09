@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: api-mountebank-secret
+  namespace: mountebank
+  labels:
+    app: mountebank-api
+    name: api-mountebank-secret
+    version: 0.1.0
+stringData:
+  secrets.toml: |
+    [secrets]
+    enable = true
+
+    [secrets.db]
+    username = "sealedUser"
+    password = "sealedPassword"
+
+    [[secrets.apis]]
+    host = "external.api.io"
+    username = "sealedIoUserName"
+    password = "sealedIoPassword"
+
+    [[secrets.apis]]
+    host = "external.api.tls"
+    username = "sealedTlsUserName"
+    password = "sealedTlsPassword"
