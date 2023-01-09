@@ -6,6 +6,7 @@ commonAnnotations:
 
 resources:
   - ../../base
+  - sealed-secrets.yaml
 
 patches:
   - target:
