@@ -133,7 +133,7 @@ spec:
             privileged: false
       containers:
         - name: main-container-mountebank
-          image: dockvalkyrie/api-mountebank:0.7.0
+          image: dockvalkyrie/api-mountebank:0.8.0
           imagePullPolicy: Always          
           ports:
           - containerPort: 3000
@@ -172,10 +172,15 @@ spec:
           volumeMounts:
             - mountPath: /home/nonroot/.imposters/
               name: config-volume
+            - mountPath: /home/nonroot/.creds/
+              name: secret-volume
       volumes:
         - name: config-volume
           configMap:
             name: api-mountebank-cm
+        - name: secret-volume
+          secret:
+            secretName: api-mountebank-secret
 ---
 # Source: helm-api/templates/ing-contour.yaml
 apiVersion: networking.k8s.io/v1
