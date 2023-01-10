@@ -204,6 +204,26 @@ spec:
 ---
 # Source: helm-api/templates/ing-istio.yaml
 apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: mountebank-gateway-grpc
+  namespace: mountebank
+  labels:
+    name: mountebank-gateway-grpc
+    version: 0.1.0
+spec:
+  selector:
+    istio: gateway # use Istio default gateway implementation
+  servers:
+    - port:
+        number: 80
+        name: grpc
+        protocol: GRPC
+      hosts:
+        - mountebank.local.grpc
+---
+# Source: helm-api/templates/ing-istio.yaml
+apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: mountebank-vs
@@ -221,8 +241,31 @@ spec:
             prefix: /planets
         - uri:
             prefix: /planet
+        - uri:
+            prefix: /secrets
       route:
         - destination:
             port:
               number: 3000
+            host: main-svc-mountebank
+---
+# Source: helm-api/templates/ing-istio.yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: mountebank-vs-grpc
+  namespace: mountebank
+spec:
+  hosts:
+    - mountebank.local.grpc
+  gateways:
+    - mountebank-gateway-grpc
+  http:
+    - match:
+        - uri:
+            prefix: "/"
+      route:
+        - destination:
+            port:
+              number: 6990
             host: main-svc-mountebank
