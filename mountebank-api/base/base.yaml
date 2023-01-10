@@ -81,11 +81,11 @@ spec:
   ports:
   - port: 3000
     targetPort: 3000
-    name: svc-3000
+    name: http-3000
     protocol: TCP
   - port: 2000
     targetPort: 2000
-    name: svc-2000
+    name: http-2000
     protocol: TCP
   - port: 6990
     targetPort: 6990
