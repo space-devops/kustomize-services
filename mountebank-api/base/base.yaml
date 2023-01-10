@@ -262,8 +262,9 @@ spec:
     - mountebank-gateway-grpc
   http:
     - match:
-        - uri:
-            prefix: "/"
+        - gateways:
+            - mountebank-gateway-grpc
+          port: 80
       route:
         - destination:
             port:
