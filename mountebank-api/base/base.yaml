@@ -89,7 +89,7 @@ spec:
     protocol: TCP
   - port: 6990
     targetPort: 6990
-    name: svc-6990
+    name: grpc
     protocol: TCP
 ---
 # Source: helm-api/templates/deployment.yaml
