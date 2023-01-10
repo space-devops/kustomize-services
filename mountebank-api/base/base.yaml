@@ -182,49 +182,47 @@ spec:
           secret:
             secretName: api-mountebank-secret
 ---
-# Source: helm-api/templates/ing-contour.yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
+# Source: helm-api/templates/ing-istio.yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
 metadata:
-  name: contour-ingress
+  name: mountebank-gateway
   namespace: mountebank
   labels:
-    name: contour-ingress
+    name: mountebank-gateway
     version: 0.1.0
 spec:
-  ingressClassName: contour
-  rules:
-    - host: mountebank.local.io
-      http:
-        paths:          
-          - pathType: Prefix
-            path: /
-            backend:
-              service:
-                name: main-svc-mountebank
-                port:
-                  number: 3000
-          - pathType: Prefix
-            path: /planets
-            backend:
-              service:
-                name: main-svc-mountebank
-                port:
-                  number: 3000
-          - pathType: Prefix
-            path: /planet
-            backend:
-              service:
-                name: main-svc-mountebank
-                port:
-                  number: 3000
-    - host:  mountebank.local.grpc
-      http:
-        paths:          
-          - backend:
-              service:
-                name: main-svc-mountebank
-                port:
-                  number: 6990
-            pathType: Prefix
-            path: "/"
+  selector:
+    istio: gateway # use Istio default gateway implementation
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - mountebank.local.io
+---
+# Source: helm-api/templates/ing-istio.yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: mountebank-vs
+  namespace: mountebank
+spec:
+  hosts:
+    - mountebank.local.io
+  gateways:
+    - mountebank-gateway
+  http:
+    - match:        
+        - uri:
+            prefix: /
+        - uri:
+            prefix: /planets
+        - uri:
+            prefix: /planet
+      route:
+        - destination:
+            port:
+              number: 3000
+            host: main-svc-mountebank
