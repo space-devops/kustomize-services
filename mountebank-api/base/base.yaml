@@ -263,7 +263,7 @@ spec:
   http:
     - match:
         - uri:
-            prefix: "/"
+            prefix: "/grpc"
       route:
         - destination:
             port:
